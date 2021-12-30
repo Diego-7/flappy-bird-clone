@@ -1,5 +1,11 @@
 console.log('[Diego] Flappy Bird');
 
+let frames = 0;
+const hitSound = new Audio();
+hitSound.src = 'sounds/hit.wav'
+const jumpSound = new Audio();
+jumpSound.src = 'sounds/jump.wav'
+
 const sprites = new Image();
 sprites.src = 'img/sprites.png';
 
@@ -40,6 +46,8 @@ const Background = {
 
 
 // Ground
+
+function newGround() {
 const ground = {
     spriteX: 0,
     spriteY: 610,
@@ -47,6 +55,18 @@ const ground = {
     heightFLB: 112,
     x: 0,
     y: canvas.height - 112,
+    
+    refresh(){
+       const groundMove = 1;
+       const repeatOn = ground.widthFLB / 2;
+       const groundMoving = ground.x - groundMove;
+
+        // console.log('[chao.x]', chao.x);
+      // console.log('[repeteEm]',repeteEm);
+      // console.log('[movimentacao]', movimentacao % repeteEm);
+
+       ground.x = groundMoving % repeatOn;
+    },
     draw() {
         context.drawImage(
             sprites,
@@ -62,10 +82,25 @@ const ground = {
             ground.widthFLB, ground.heightFLB,
             (ground.x + ground.widthFLB), ground.y,
             ground.widthFLB, ground.heightFLB,
-        )
-    }
+        );
+    },
+};
+return ground;
+
 }
 
+function collide(flappyBird, ground) {
+
+    const flappyBirdY = flappyBird.y + flappyBird.heightFLB;
+    const groundY = ground.y;
+
+    if(flappyBirdY >= groundY) {
+        return true;
+    }
+    return false;
+}
+
+function newFlappyBird() {
 const flappyBird = {
     spriteX: 0,
     spriteY: 0,
@@ -73,24 +108,62 @@ const flappyBird = {
     heightFLB: 24,
     x: 10,
     y: 50,
+    jump: 4.6,
+    Jump() {
+        console.log('devo pular')
+        console.log('antes', flappyBird.speed)
+        flappyBird.speed = - flappyBird.jump;
+        console.log('depois', flappyBird.speed) 
+    },
     gravity: 0.25,
     speed: 0,
-
 refresh(){
+    if(collide(flappyBird, globals.ground)) {
+        console.log('colidiu');
+        hitSound.play();
+
+        changeScreen(screen.START);
+        return;
+
+    }
     flappyBird.speed =  flappyBird.speed + flappyBird.gravity;
-    
     flappyBird.y = flappyBird.y + flappyBird.speed;
 },
+ moves: [
+    { spriteX:0, spriteY:0,}, //wings up
+    { spriteX:0, spriteY:26,}, //wings in the middle
+    { spriteX:0, spriteY:52,}, //wings down
+    { spriteX:0, spriteY:26,}, //wings in the middle
+],
+actualFrame: 0,
+frameRefresh() {
+    const framesInterval = 10;
+    const passInterval = frames % framesInterval === 0;
+
+    if(passInterval) {
+    const increaseBase = 1;
+    const increase = increaseBase + flappyBird.actualFrame;
+    const repeatBase = flappyBird.moves.length;
+    flappyBird.actualFrame = increase % repeatBase   
+    }
+},
     draw(){
+        flappyBird.frameRefresh();
+
+        const { spriteX, spriteY } = flappyBird.moves[flappyBird.actualFrame]
+        
         context.drawImage(
         sprites,
-    flappyBird.spriteX, flappyBird.spriteY, // Sprite X, Sprite Y
+    spriteX, spriteY, // Sprite X, Sprite Y
     flappyBird.widthFLB, flappyBird.heightFLB, //cutting size in sprite
     flappyBird.x, flappyBird.y,
     flappyBird.widthFLB, flappyBird.heightFLB,
         ); 
     }
 }
+return flappyBird;
+}
+
 
 // Message Get Ready
 const messageGetReady = {
@@ -115,28 +188,35 @@ const messageGetReady = {
 //
 // screen
 //
+const globals = {}
 let screenActive = {};
 
 function changeScreen(newScreen) {
-
     screenActive = newScreen;
+
+    if(screenActive.initialize) {
+        screenActive.initialize();
+
+    }
 }
 const screen ={
     START: {
+        initialize() {
+        globals.flappyBird = newFlappyBird();
+        globals.ground = newGround();
+        },
        draw(){
         Background.draw();
-        ground.draw();
-        flappyBird.draw();
-           messageGetReady.draw();
-           
-           
+        globals.ground.draw();
+        globals.flappyBird.draw();
+        messageGetReady.draw();
        },
        click() {
-           changeScreen(screen.game);
 
+           changeScreen(screen.game);
        },
         refresh(){
-
+            globals.ground.refresh();
         }
     }
 };
@@ -144,21 +224,27 @@ const screen ={
 screen.game = {
     draw() {
     Background.draw();
-    ground.draw();
-    flappyBird.draw();
+    globals.ground.draw();
+    globals.flappyBird.draw();
     },
+    click() {
+        globals.flappyBird.Jump();
+        jumpSound.play();
 
-    refresh(){
-        flappyBird.refresh();
         
+
+    },
+    refresh(){
+        globals.flappyBird.refresh();  
+        globals.ground.refresh();
     }
 };
-
 
 function loop(){
 
     screenActive.draw();
     screenActive.refresh();
+    frames = frames + 1;
 
 requestAnimationFrame(loop);
 
