@@ -92,19 +92,90 @@ refresh(){
     }
 }
 
-function loop(){
+// Message Get Ready
+const messageGetReady = {
+    sX: 134,
+    sY: 0,
+    w: 174,
+    h: 152,
+    x: (canvas.width / 2) - 174 / 2,
+    y: 50,
+    draw() {
+        context.drawImage(
+            sprites,
+            messageGetReady.sX, messageGetReady.sY,
+            messageGetReady.w, messageGetReady.h,
+            messageGetReady.x, messageGetReady.y,
+            messageGetReady.w, messageGetReady.h,
 
-    flappyBird.refresh();
+        );
+    }
+}
+
+//
+// screen
+//
+let screenActive = {};
+
+function changeScreen(newScreen) {
+
+    screenActive = newScreen;
+}
+const screen ={
+    START: {
+       draw(){
+        Background.draw();
+        ground.draw();
+        flappyBird.draw();
+           messageGetReady.draw();
+           
+           
+       },
+       click() {
+           changeScreen(screen.game);
+
+       },
+        refresh(){
+
+        }
+    }
+};
+
+screen.game = {
+    draw() {
     Background.draw();
     ground.draw();
     flappyBird.draw();
+    },
+
+    refresh(){
+        flappyBird.refresh();
+        
+    }
+};
 
 
-    
-    
+function loop(){
+
+    screenActive.draw();
+    screenActive.refresh();
 
 requestAnimationFrame(loop);
 
 }
 
+document.addEventListener('click', ()=>{
+ if (screenActive.click){
+     screenActive.click();
+ }
+
+});
+
+document.addEventListener('keypress', e=>{
+ if (e.key === 'Enter'){
+     screenActive.click();
+ }
+});
+
+changeScreen(screen.START);
 loop();
