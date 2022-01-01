@@ -115,7 +115,7 @@ refresh(){
         console.log('colidiu');
         hitSound.play();
 
-        changeScreen(screen.START);
+        changeScreen(screen.GAME_OVER);
         return;
 
     }
@@ -157,7 +157,7 @@ frameRefresh() {
 return flappyBird;
 }
 
-// Message Get Ready
+// Get Reeady Message
 const messageGetReady = {
     sX: 134,
     sY: 0,
@@ -172,6 +172,26 @@ const messageGetReady = {
             messageGetReady.w, messageGetReady.h,
             messageGetReady.x, messageGetReady.y,
             messageGetReady.w, messageGetReady.h,
+
+        );
+    }
+}
+
+// Game Over Message
+const messageGameOver = {
+    sX: 134,
+    sY: 153,
+    w: 226,
+    h: 200,
+    x: (canvas.width / 2) - 226 / 2,
+    y: 50,
+    draw() {
+        context.drawImage(
+            sprites,
+            messageGameOver.sX, messageGameOver.sY,
+            messageGameOver.w, messageGameOver.h,
+            messageGameOver.x, messageGameOver.y,
+            messageGameOver.w, messageGameOver.h,
 
         );
     }
@@ -263,6 +283,8 @@ function newPipes() {
 
                 if(pipes.FLBcolide(pair)){
                     console.log('voce perdeu')
+                    hitSound.play();
+                    changeScreen(screen.GAME_OVER);
 
                 }
 
@@ -278,15 +300,26 @@ function newPipes() {
 }
 
 function newScore(){
+    
+    // score = placar.
+    //scores = pontos
+
     const score = {
         scores: 0,
         draw(){
-            context.font = '50px "VT323';
+            context.font = '35px "VT323';
+            context.textAlign = 'right';
             context.fillstyle = "white";
-            context.fillText(`Hello world ${score.scores}`, 50, 90);
+            context.fillText(`Score: ${score.scores}`, canvas.width - 10, 35);
         },
 
         refresh(){
+            const framesInterval = 10;
+    const passInterval = frames % framesInterval === 0;
+    if(passInterval){
+        score.scores = score.scores + 1;
+
+    }
 
         }
 
@@ -298,7 +331,7 @@ function newScore(){
 // screen
 //
 const globals = {};
-let screenActive = {};
+var screenActive = {};
 
 function changeScreen(newScreen) {
     screenActive = newScreen;
@@ -346,7 +379,6 @@ screen.GAME = {
     click() {
         globals.flappyBird.Jump();
         jumpSound.play();
-
     },
     refresh(){
         globals.pipes.draw();
@@ -355,6 +387,19 @@ screen.GAME = {
         globals.score.refresh(); 
     }
 };
+
+screen.GAME_OVER = {
+    draw(){
+       messageGameOver.draw();
+
+    },
+    refresh(){
+
+    },
+    click(){
+        changeScreen(screen.START);
+    }
+}
 
 function loop(){
 
