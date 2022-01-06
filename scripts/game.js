@@ -3,6 +3,9 @@ let frames = 0;
 const hitSound = new Audio();
 hitSound.src = 'sounds/hit.wav';
 
+const jumpSound = new Audio();
+jumpSound.src = 'sounds/jump.wav'
+
 const sprites = new Image();
 sprites.src = 'img/sprites.png';
 
@@ -104,6 +107,7 @@ function newFlappybird() {
     jump() {
   
       flappyBird.speed =  - flappyBird.jumping;
+      jumpSound.play();
      
     },
     gravity: 0.25,
@@ -217,7 +221,7 @@ function newPipes() {
     draw() {
       pipes.pairs.forEach(function(pair) {
         const yRandom = pair.y;
-        const pipesSpace = 90;
+        const pipesSpace = 112;
   
         const skyPipesX = pair.x;
         const skyPipesY = yRandom; 
